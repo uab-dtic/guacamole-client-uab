@@ -109,6 +109,7 @@
                                 <exclude>**/templates/*.html</exclude>
                                 <exclude>src/licenses/**/*</exclude>
                                 <exclude>target/**/*</exclude>
+                                <exclude>.github/**/*</exclude>
                             </excludes>
                             <skip>${ignoreLicenseErrors}</skip>
                         </configuration>

@@ -20,13 +20,13 @@
 package org.apache.guacamole.auth.json;
 
 import com.google.inject.Inject;
+import inet.ipaddr.IPAddressString;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.guacamole.GuacamoleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.web.util.matcher.IpAddressMatcher;
 
 /**
  * Service for testing the validity of received HTTP requests.
@@ -42,8 +42,21 @@ public class RequestValidationService {
      * Service for retrieving configuration information regarding the
      * JSONAuthenticationProvider.
      */
-    @Inject
     private ConfigurationService confService;
+
+    /**
+     * Create a new instance of the request validation service, with the
+     * provided ConfigurationService object used to retrieve configuration
+     * properties for this extension.
+     *
+     * @param confService
+     *     The instance of ConfigurationService for retrieving configuration
+     *     properties for this extension.
+     */
+    @Inject
+    public RequestValidationService(ConfigurationService confService) {
+        this.confService = confService;
+    }
 
     /**
      * Returns whether the given request can be used for authentication, taking
@@ -77,16 +90,11 @@ public class RequestValidationService {
             return true;
         }
 
-        // Build matchers for each trusted network
-        Collection<IpAddressMatcher> matchers = new ArrayList<>(trustedNetworks.size());
-        for (String network : trustedNetworks)
-            matchers.add(new IpAddressMatcher(network));
-
-        // Otherwise ensure at least one subnet matches
-        for (IpAddressMatcher matcher : matchers) {
+        // Otherwise ensure that the remote address is part of a trusted network
+        for (String network : trustedNetworks) {
 
             // Request is allowed if any subnet matches
-            if (matcher.matches(request)) {
+            if (new IPAddressString(network).contains(new IPAddressString(request.getRemoteAddr()))) {
                 logger.debug("Authentication request from \"{}\" is ALLOWED (matched subnet).", request.getRemoteAddr());
                 return true;
             }

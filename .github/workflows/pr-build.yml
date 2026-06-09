@@ -4,6 +4,9 @@ name: Pull request CI build
 on:
   pull_request:
 
+  # run on demand
+  workflow_dispatch:
+
 # Limit to only one build for a given PR source branch at a time,
 # cancelling any in-progress builds
 concurrency:
